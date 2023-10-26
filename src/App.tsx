@@ -1,26 +1,143 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
+import {Client, Stomp} from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
-function App() {
+const App: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [messages, setMessages] = useState<string[]>([]);
+  const [stompClient, setStompClient] = useState<any>(null); // Initialize stompClient state
+
+  useEffect(() => {
+    initializeWebSocket();
+  }, []);
+
+  const initializeWebSocket = () => {
+    console.log('Attempting to connect to WebSocket');
+    let token = localStorage.getItem("access_token");
+    if (!token) {
+      console.log("No token found");
+      return;
+    }
+
+    const header = {
+      "Authorization": `Bearer ${token}`
+    };
+    let socket = new SockJS(`http://localhost:8080/chat-app`);
+    const client = Stomp.over(socket);
+    setStompClient(client);
+
+    /*
+    client.connect(header, () => {
+      console.log("Connected");
+    }, (error: any) => {
+      console.log('Connection error:', error);
+    });*/
+    client.connect(header, () => {
+      console.log("Connected");
+      client.subscribe('/topic/rabbitmqchat', (message) => {
+        console.log('Received message:', message.body);
+      });
+    }, (error: any) => {
+      console.log('Connection error:', error);
+    });
+
+    client.activate();
+    setStompClient(client);
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('access_token', data.access_token);
+        console.log(data);
+        initializeWebSocket();
+      } else {
+        console.error('Login failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const handleSend = () => {
+    if (stompClient && stompClient.isConnected) {
+      stompClient.publish({ destination: '/chat/sendMessage', body: JSON.stringify({ content: message }) });
+    } else {
+      console.log('STOMP client is not connected');
+    }
+  };
+
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [regEmail, setRegEmail] = useState<string>('');
+  const [regPassword, setRegPassword] = useState<string>('');
+  const handleRegister = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: regEmail,
+          password: regPassword
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Registration successful:", data);
+      } else {
+        console.error('Registration failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Registration failed:', error);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div>
+        <h1>Register</h1>
+        <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        <input type="text" placeholder="Email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} />
+        <button onClick={handleRegister}>Register</button>
+        <hr />
+
+        <h1>Login</h1>
+        <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <button onClick={handleLogin}>Login</button>
+        <hr />
+        <input type="text" placeholder="RabbitMQ Message" value={message} onChange={(e) => setMessage(e.target.value)} />
+        <button onClick={handleSend}>Send Message</button>
+
+        <div>
+          <h2>Received Messages:</h2>
+          <ul>
+            {messages.map((msg, index) => (
+                <li key={index}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
   );
-}
+};
 
 export default App;
+
