@@ -1,20 +1,24 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import {Client, Stomp} from '@stomp/stompjs';
+import {CompatClient, Stomp} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import {cleanup} from "@testing-library/react";
 
 const App: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<string[]>([]);
-  const [stompClient, setStompClient] = useState<any>(null); // Initialize stompClient state
+  const [stompClient, setStompClient] = useState<CompatClient|any>(null);
 
   useEffect(() => {
     initializeWebSocket();
   }, []);
 
   const initializeWebSocket = () => {
+
+    if(stompClient && stompClient.connected) return;
+
     console.log('Attempting to connect to WebSocket');
     let token = localStorage.getItem("access_token");
     if (!token) {
@@ -22,30 +26,22 @@ const App: React.FC = () => {
       return;
     }
 
-    const header = {
-      "Authorization": `Bearer ${token}`
+    const headers = {
+      "Authorization" : `Bearer ${token}`,
+      "Access-Control-Allow-Origin" : "*",
     };
     let socket = new SockJS(`http://localhost:8080/chat-app`);
-    const client = Stomp.over(socket);
-    setStompClient(client);
+    const client = Stomp.over(function(){
+      return socket;
+    })
 
-    /*
-    client.connect(header, () => {
-      console.log("Connected");
-    }, (error: any) => {
-      console.log('Connection error:', error);
-    });*/
-    client.connect(header, () => {
-      console.log("Connected");
-      client.subscribe('/topic/rabbitmqchat', (message) => {
+    client.connect(headers, () =>{
+      client.subscribe("/topic/rabbitmqchat", (message) =>{
         console.log('Received message:', message.body);
       });
-    }, (error: any) => {
-      console.log('Connection error:', error);
     });
-
-    client.activate();
     setStompClient(client);
+
   };
 
   const handleLogin = async () => {
@@ -72,7 +68,7 @@ const App: React.FC = () => {
   };
 
   const handleSend = () => {
-    if (stompClient && stompClient.isConnected) {
+    if (stompClient) {
       stompClient.publish({ destination: '/chat/sendMessage', body: JSON.stringify({ content: message }) });
     } else {
       console.log('STOMP client is not connected');
