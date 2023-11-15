@@ -8,6 +8,7 @@ const App: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [testingMessage, setTestingMessage] = useState<string>('');
   const [messages, setMessages] = useState<string[]>([]);
   const [stompClient, setStompClient] = useState<CompatClient|any>(null);
 
@@ -75,6 +76,34 @@ const App: React.FC = () => {
     }
   };
 
+  const handleTestingSend = async () => {
+    try {
+      const chatMessage = {
+        type: 'Message',
+        content: testingMessage,
+        sender: 'Jan Novák',
+      };
+
+      const token = localStorage.getItem("access_token");
+      const response = await fetch("http://localhost:8080/api/chat/testMessage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: chatMessage }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Response data:', data);
+      } else {
+        console.error('Request failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Request error:', error);
+    }
+  };
+
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [regEmail, setRegEmail] = useState<string>('');
@@ -122,6 +151,9 @@ const App: React.FC = () => {
         <hr />
         <input type="text" placeholder="RabbitMQ Message" value={message} onChange={(e) => setMessage(e.target.value)} />
         <button onClick={handleSend}>Send Message</button>
+
+        <input type="text" placeholder="Testing Message" value={testingMessage} onChange={(e) => setTestingMessage(e.target.value)} />
+        <button onClick={handleTestingSend}>Send Message</button>
 
         <div>
           <h2>Received Messages:</h2>
