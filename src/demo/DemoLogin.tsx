@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 const DemoLogin: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [error, setError] = useState<string | null>(null);
+
+    const baseUrl = "http://localhost:8080"
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/auth/authenticate', {
+            const response = await fetch(baseUrl + '/api/auth/authenticate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -17,15 +18,14 @@ const DemoLogin: React.FC = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
-                console.log(response);
-                setError(null);
+                localStorage.setItem('access_token', data.body.access_token);
+                localStorage.setItem('refresh_token', data.body.refresh_token);
+                console.log(response.body);
             } else {
-                setError('Login failed. Please check your credentials.');
+                console.log(response.body);
             }
         } catch (error) {
-            setError('An error occurred during login.');
+            console.log('An error occurred during login.');
         }
     };
 
@@ -41,7 +41,6 @@ const DemoLogin: React.FC = () => {
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <button onClick={handleLogin}>Login</button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
 };
