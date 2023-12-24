@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
+import {BACKEND_URL} from "../constants/contants";
 
 const DemoRegister: React.FC = () => {
-    const baseUrl = "http://localhost:8080"
-
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -22,7 +21,7 @@ const DemoRegister: React.FC = () => {
 
         try {
             console.log(formData);
-            const response = await fetch(baseUrl + '/api/auth/register', {
+            const response = await fetch(BACKEND_URL + '/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

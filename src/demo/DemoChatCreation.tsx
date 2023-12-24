@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import {BACKEND_URL} from "../constants/contants";
 
 const DemoChatCreation: React.FC = () => {
     const [chatName, setChatName] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [createdChat, setCreatedChat] = useState<any>(null);
 
-    const baseUrl = "http://localhost:8080"
     const handleCreateChat = async () => {
         try {
             const token = localStorage.getItem('access_token');
@@ -15,7 +15,7 @@ const DemoChatCreation: React.FC = () => {
                 return;
             }
 
-            const response = await fetch(baseUrl + `/api/chat/create?chatName=${chatName}`, {
+            const response = await fetch(BACKEND_URL + `/api/chat/create?chatName=${chatName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

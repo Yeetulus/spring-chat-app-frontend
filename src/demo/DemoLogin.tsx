@@ -1,31 +1,27 @@
 import React, { useState } from 'react';
+import {BACKEND_URL} from "../constants/contants";
 
 const DemoLogin: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
-    const baseUrl = "http://localhost:8080"
-
     const handleLogin = async () => {
-        try {
-            const response = await fetch(baseUrl + '/api/auth/authenticate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+        const response = await fetch(BACKEND_URL + '/api/auth/authenticate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('access_token', data.body.access_token);
-                localStorage.setItem('refresh_token', data.body.refresh_token);
-                console.log(response.body);
-            } else {
-                console.log(response.body);
-            }
-        } catch (error) {
-            console.log('An error occurred during login.');
+        if (response.ok) {
+            const data = await response.json();
+            console.log("Logged in");
+            console.log(data);
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('refresh_token', data.refresh_token);
+        } else {
+            console.log(response);
         }
     };
 

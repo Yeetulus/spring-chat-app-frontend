@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {BACKEND_URL} from "../constants/contants";
 
 export interface DemoChatRoom {
     id: number;
@@ -28,8 +29,6 @@ const DemoMessageSender: React.FC = () => {
     const [chats, setChats] = useState<DemoChatObject[]>();
     const [selectedChat, setSelectedChat] = useState<DemoChatObject | null>(null);
 
-    const baseUrl = "http://localhost:8080"
-
     useEffect(() => {
         const token = localStorage.getItem('access_token');
 
@@ -40,7 +39,7 @@ const DemoMessageSender: React.FC = () => {
 
         const fetchChats = async () => {
             try {
-                const response = await fetch(baseUrl + '/api/chat/exchanges', {
+                const response = await fetch(BACKEND_URL + '/api/chat/exchanges', {
                     method: 'GET',
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -74,12 +73,12 @@ const DemoMessageSender: React.FC = () => {
                 type: 'Text',
                 chatId: selectedChat?.chat.id,
                 content: message,
-                sender: selectedChat?.chat.owner.email
+                senderId: selectedChat?.chat.owner.id
             };
 
             try {
                 const token = localStorage.getItem("access_token");
-                const response = await fetch(baseUrl + "/api/chat/send", {
+                const response = await fetch(BACKEND_URL + "/api/chat/send", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
