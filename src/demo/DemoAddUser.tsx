@@ -1,39 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {BACKEND_URL} from "../constants/contants";
+import {DemoChatObject} from "./DemoMessageSender";
 
-export interface DemoChatRoom {
-    id: number;
-    exchange: string;
-    chatName: string;
-    owner: DemoUser;
-    userQueues: DemoUsers[];
-}
-export interface DemoChatObject {
-    chat: DemoChatRoom;
-    queues: string[];
-}
-export interface DemoUser{
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string
-}
-export interface DemoUsers {
-    id: number;
-    user: DemoUser;
-    queue: string;
-}
+const DemoAddUser: React.FC = () => {
 
-export interface DemoChatMessage {
-    type: string;
-    chatId: number;
-    content: string;
-    senderId: number;
-}
-
-const DemoMessageSender: React.FC = () => {
-    const [message, setMessage] = useState<string>('');
-    const [chats, setChats] = useState<DemoChatObject[]>();
+    const [newUser, setNewUser] = useState<string>('');
+    const [chats, setChats] = useState<DemoChatObject[]>([]);
     const [selectedChat, setSelectedChat] = useState<DemoChatObject | null>(null);
 
     useEffect(() => {
@@ -74,36 +46,28 @@ const DemoMessageSender: React.FC = () => {
 
 
     const handleSend = async () => {
-        if (message.trim() !== '') {
-
-            const chatMessage: DemoChatMessage = {
-                type: 'Text',
-                chatId: selectedChat!.chat.id,
-                content: message,
-                senderId: selectedChat!.chat.owner.id
-            };
-
-            try {
+        if (newUser.trim() !== '') {
+           try {
                 const token = localStorage.getItem("access_token");
-                const response = await fetch(BACKEND_URL + "/api/chat/send", {
+                const url = `${BACKEND_URL}/api/chat/add?chatId=${selectedChat?.chat.id}&email=${newUser}`;
+                const response = await fetch(url, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`,
                     },
-                    body: JSON.stringify(chatMessage),
                 });
 
                 if (response.ok) {
-                    console.log('Message sent successfully');
+                    console.log('Added new User');
                 } else {
-                    console.error('Message sending failed:', response.statusText);
+                    console.error('Could not add new user:', response.statusText);
                 }
             } catch (error) {
-                console.error('Message sending error:', error);
+                console.error('error:', error);
             }
 
-            setMessage('');
+            setNewUser('');
         }
     };
 
@@ -111,7 +75,7 @@ const DemoMessageSender: React.FC = () => {
 
     return (
         <div>
-            <h2>Send a Message</h2>
+            <h2>Add new User</h2>
             <div>
                 <label>Select Chat:</label>
                 <select
@@ -128,10 +92,10 @@ const DemoMessageSender: React.FC = () => {
                     ))}
                 </select>
             </div>
-            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} />
+            <input type="text" value={newUser} onChange={(e) => setNewUser(e.target.value)} />
             <button onClick={handleSend}>Send</button>
         </div>
     );
 };
 
-export default DemoMessageSender;
+export default DemoAddUser;

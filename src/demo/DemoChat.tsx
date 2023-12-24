@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { CompatClient, Stomp } from '@stomp/stompjs';
-import {DemoChatObject, DemoChatRoom} from './DemoMessageSender';
+import {DemoChatMessage, DemoChatObject} from './DemoMessageSender';
 import {BACKEND_URL} from "../constants/contants";
 
 const DemoChat: React.FC = () => {
     const [stompClient, setStompClient] = useState<CompatClient | null>(null);
     const [connectionStatus, setConnectionStatus] = useState<string>('Connecting...');
     const [chats, setChats] = useState<DemoChatObject[]>([]);
-    const [chatMessages, setChatMessages] = useState<{ [key: string]: string[] }>({});
+    const [chatMessages, setChatMessages] = useState<{ [key: string]: DemoChatMessage[] }>({});
 
     useEffect(() => {
 
@@ -80,7 +80,7 @@ const DemoChat: React.FC = () => {
                 client.subscribe(`/chat/${queue}`, (message) => {
                     console.log(message);
                     try {
-                        const body = message.body;
+                        const body: DemoChatMessage = JSON.parse(message.body);
                         console.log('Received message: ' + body);
 
                         setChatMessages((prevChatMessages) => {
@@ -88,7 +88,7 @@ const DemoChat: React.FC = () => {
                             const messages = prevChatMessages[chatKey] || [];
                             return {
                                 ...prevChatMessages,
-                                [chatKey]: [...messages, body.slice(1, -1)],
+                                [chatKey]: [...messages, body],
                             };
                         });
                     } catch (error) {
@@ -109,7 +109,10 @@ const DemoChat: React.FC = () => {
                     <h2>Chat: {chat.chat.chatName}</h2>
                     <ul>
                         {(chatMessages[chat.chat.exchange] || []).map((msg, index) => (
-                            <li key={index}>{msg}</li>
+                            <div key={index}>
+                                <span>{chat.chat.userQueues.find(uq => uq.user.id === msg.senderId)?.user.firstName}</span>
+                                <li>{msg.content}</li>
+                            </div>
                         ))}
                     </ul>
                 </div>

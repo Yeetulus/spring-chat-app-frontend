@@ -5,6 +5,7 @@ import DemoLogin from "./demo/DemoLogin";
 import DemoMessageSender from "./demo/DemoMessageSender";
 import DemoChatCreation from "./demo/DemoChatCreation";
 import DemoRegister from "./demo/DemoRegister";
+import DemoAddUser from "./demo/DemoAddUser";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
         <DemoChatCreation></DemoChatCreation>
         <DemoChat></DemoChat>
         <DemoMessageSender></DemoMessageSender>
+        <DemoAddUser></DemoAddUser>
     </div>
   );
 }
