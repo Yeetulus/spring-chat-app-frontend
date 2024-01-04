@@ -2,6 +2,15 @@
   text-align: center;
 }
 
+body {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.dropdown-toggle::after {
+  display: none !important;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
