@@ -548,11 +548,11 @@ const MainPage = () => {
             </Modal.Body>
         </Modal>;
     }
-    async function handleDeleteUser(user: ChatUser) {
+    async function handleDeleteUser(_user: ChatUser) {
         try {
             const token = getAccessTokenFromLocalStorage();
             if(!token) return;
-            const response = await fetch(`/api/chat/remove?chatId=${selectedChat?.chat.id}&userId=${user.id}`, {
+            const response = await fetch(`/api/chat/remove?chatId=${selectedChat?.chat.id}&userId=${_user.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -561,9 +561,9 @@ const MainPage = () => {
             });
 
             if (response.ok) {
-                console.log(`Removed user ${user.id} from chat ${selectedChat?.chat.id}`);
-                toast.success(`Removed user ${user.email} from chat ${selectedChat?.chat.chatName}`, {autoClose: 3000});
-                selectChat(prevState => prevState = undefined);
+                console.log(`Removed user ${_user.id} from chat ${selectedChat?.chat.id}`);
+                toast.success(`Removed user ${_user.email} from chat ${selectedChat?.chat.chatName}`, {autoClose: 3000});
+                if(user?.id === _user.id) selectChat(prevState => prevState = undefined);
                 handleCloseUsersModal();
             } else {
                 console.error('Failed to fetch chats:', response.statusText);
