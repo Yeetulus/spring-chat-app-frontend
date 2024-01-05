@@ -584,15 +584,17 @@ const MainPage = () => {
                               className={(user?.id === userQueue.user.id) ? "bg-primary-subtle" : ""}>
                             <Card.Text className={"px-3 pt-1"}
                                        style={{display: 'flex', justifyContent: 'space-between'}}>
-                                <div>
-                                    <span
-                                        className={"fw-bold"}>{userQueue.user.firstName + " " + userQueue.user.lastName}</span>
-                                    {userQueue.user.id === selectedChat.chat.owner.id ? (
+                                    <span>
+                                        <span className={"fw-bold"}>
+                                            {userQueue.user.firstName + " " + userQueue.user.lastName}
+                                        </span>
+                                        {userQueue.user.id === selectedChat.chat.owner.id ? (
                                         <span className={"text-body-tertiary"}>{" - owner"}</span>
-                                    ) : (
+                                        ) : (
                                         <></>
-                                    )}
-                                </div>
+                                        )}
+                                    </span>
+
                                 {user?.id === selectedChat.chat.owner.id ? <OverlayTrigger overlay={
                                     <Tooltip placement={top}>
                                         {"Remove " + userQueue.user.firstName + " " + userQueue.user.lastName + " from room " + selectedChat.chat.chatName}
