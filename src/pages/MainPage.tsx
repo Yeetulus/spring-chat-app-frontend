@@ -174,6 +174,7 @@ const MainPage = () => {
                     }
                     return prevState;
                 });
+                selectChat(undefined);
             }
             else{
                 console.log(_chat);
